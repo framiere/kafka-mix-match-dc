@@ -1,0 +1,63 @@
+version: '2'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper
+    container_name: zookeeper
+    hostname: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  kafka-1:
+    image: confluentinc/cp-kafka
+    container_name: kafka-1
+    hostname: kafka-1
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_BROKER_RACK: "dc1"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: USER://kafka-1:9092,REPLICATION://kafka-1:20000
+      KAFKA_ADVERTISED_LISTENERS: USER://kafka-1:9092,REPLICATION://kafka-1:20000
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: USER:PLAINTEXT,REPLICATION:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: REPLICATION
+
+  kafka-2:
+    image: confluentinc/cp-kafka
+    container_name: kafka-2
+    hostname: kafka-2
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_BROKER_RACK: "dc1"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: USER://kafka-2:9092,REPLICATION://kafka-2:20001
+      KAFKA_ADVERTISED_LISTENERS: USER://kafka-2:9092,REPLICATION://kafka-2:20001
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: USER:PLAINTEXT,REPLICATION:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: REPLICATION
+
+  kafka-3:
+    image: confluentinc/cp-kafka
+    container_name: kafka-3
+    hostname: kafka-3
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_BROKER_RACK: "dc2"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: REPLICATION://kafka-3:9092
+      KAFKA_ADVERTISED_LISTENERS: REPLICATION://kafka-3:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: REPLICATION:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: REPLICATION
+
+  kafka-client:
+    image: confluentinc/cp-kafka
+    container_name: kafka-client
+    entrypoint: /bin/sh -c "sleep 10000000"
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - zookeeper
